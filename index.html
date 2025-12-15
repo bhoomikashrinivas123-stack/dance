@@ -141,14 +141,15 @@ const gameState={
   evidence:new Set(),
   timeRemaining:0,
   timer:null,
-  uvUnlocked:false
+  uvUnlocked:false,
+  hintIndex:0
 };
 
 const rooms=[
 {
   title:"Room 1: The Crime Scene",
   timeLimit:300,
-  story:"A diamond vanished. Some clues need time to reveal.",
+  story:"A diamond vanished. Some clues require patience to reveal.",
   visualClues:[
     {emoji:"🟣",label:"UV Lamp",description:"Invisible ink reveals: Meet at 15:30",locked:true},
     {emoji:"🕐",label:"Clock",description:"Clock shows 3:30 PM"},
@@ -157,7 +158,10 @@ const rooms=[
   ],
   puzzle:{question:"What time was the diamond stolen? (HH:MM)",answer:"15:30"},
   evidence:"Security Log Extract",
-  hint:"Wait… some clues need light to appear"
+  hints:[
+    "Some messages aren’t meant to be seen immediately.",
+    "Give the room time — certain tools reveal what eyes alone cannot."
+  ]
 },
 {
   title:"Room 2: Suspect Interrogation",
@@ -171,7 +175,7 @@ const rooms=[
   ],
   puzzle:{question:"Who is lying? (Alex, Ben, Clara)",answer:"clara"},
   evidence:"Phone Records",
-  hint:"Compare timelines carefully"
+  hints:["Compare timelines carefully"]
 },
 {
   title:"Room 3: The Final Code",
@@ -185,7 +189,7 @@ const rooms=[
   ],
   puzzle:{question:"Enter the 4-digit code",answer:"1530"},
   evidence:"Confession Evidence",
-  hint:"Use what you already found"
+  hints:["Use what you already discovered"]
 }
 ];
 
@@ -214,6 +218,7 @@ function loadRoom(i){
   if(i>=rooms.length){showFinalRiddle();return;}
   gameState.currentRoom=i;
   gameState.timeRemaining=rooms[i].timeLimit;
+  gameState.hintIndex=0;
   gameState.uvUnlocked=false;
 
   document.getElementById("gameContainer").innerHTML=`
@@ -240,7 +245,6 @@ function loadRoom(i){
       <div id="hintMsg"></div>
       <div id="message"></div>
     </div>
-
     <div class="sidebar">
       <h3>Evidence</h3>
       ${rooms.map(r=>`
@@ -257,7 +261,7 @@ function loadRoom(i){
       const uv=document.getElementById("clue-0");
       uv.classList.remove("disabled");
       uv.querySelector(".small-note")?.remove();
-    },60000); // 1 minute
+    },60000);
   }
 }
 
@@ -292,8 +296,12 @@ function submitAnswer(){
 }
 
 function showHint(){
-  document.getElementById("hintMsg").textContent=rooms[gameState.currentRoom].hint;
-  gameState.timeRemaining=Math.max(gameState.timeRemaining-60,0);
+  const r=rooms[gameState.currentRoom];
+  if(gameState.hintIndex < r.hints.length){
+    document.getElementById("hintMsg").textContent=r.hints[gameState.hintIndex];
+    gameState.hintIndex++;
+    gameState.timeRemaining=Math.max(gameState.timeRemaining-60,0);
+  }
 }
 
 function openImageModal(idx){
@@ -308,7 +316,6 @@ function closeImageModal(){
   document.getElementById("imageModal").classList.remove("active");
 }
 
-/* FINAL RIDDLE */
 function showFinalRiddle(){
   document.getElementById("gameContainer").innerHTML=`
     <div class="main-content" style="grid-column:1/-1;text-align:center">

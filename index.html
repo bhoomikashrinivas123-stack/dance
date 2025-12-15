@@ -69,7 +69,7 @@ input{
   background:transparent;
   color:#fff;
   width:100%;
-  margin-top:8px
+  margin-top:10px
 }
 button{
   padding:10px 16px;
@@ -78,10 +78,10 @@ button{
   color:#fff;
   border-radius:6px;
   cursor:pointer;
-  margin-top:10px
+  margin-top:12px
 }
-.message.success{color:#16c784;margin-top:10px}
-.message.error{color:#e94560;margin-top:10px}
+.message.success{color:#16c784;margin-top:12px}
+.message.error{color:#e94560;margin-top:12px}
 .image-modal{
   display:none;
   position:fixed;
@@ -113,19 +113,10 @@ button{
 }
 .evidence-item{margin-bottom:6px;font-size:14px}
 .hint-button{
-  display:flex;
-  align-items:center;
-  margin-top:10px;
-  cursor:pointer;
-  color:#16c784;
   background:#16213e;
-  border:none;
-  padding:8px;
-  border-radius:6px
+  color:#16c784;
 }
-.hint-message{margin-top:6px;font-size:14px;font-style:italic}
 .play-again{margin-top:20px;cursor:pointer;font-size:28px;color:#16c784}
-ul{margin-left:20px;margin-top:5px}
 </style>
 </head>
 
@@ -205,12 +196,7 @@ function showInstructions(){
   document.getElementById("gameContainer").innerHTML=`
     <div class="main-content" style="grid-column:1/-1;text-align:center">
       <h1>🕵 How to Play</h1>
-      <ul style="max-width:600px;margin:20px auto;text-align:left">
-        <li>Click visual clues to inspect them</li>
-        <li>Each room has a timer ⏱</li>
-        <li>Hints cost time 💡</li>
-        <li>Wrong answers reduce time</li>
-      </ul>
+      <p>Solve all rooms, then face the final internet riddle.</p>
       <button onclick="startGame()">🚨 Start Investigation</button>
     </div>
   `;
@@ -218,13 +204,12 @@ function showInstructions(){
 
 function startGame(){
   gameState.currentRoom=0;
-  gameState.hintsUsed=0;
   gameState.evidence.clear();
   loadRoom(0);
 }
 
 function loadRoom(i){
-  if(i>=rooms.length){showFinal();return;}
+  if(i>=rooms.length){showInternetRiddle();return;}
   gameState.currentRoom=i;
   gameState.timeRemaining=rooms[i].timeLimit;
 
@@ -247,13 +232,11 @@ function loadRoom(i){
       <input id="answerInput">
       <button onclick="submitAnswer()">Submit</button>
       <button class="hint-button" onclick="showHint()">💡 Hint</button>
-      <div id="hintMsg" class="hint-message"></div>
+      <div id="hintMsg"></div>
       <div id="message"></div>
     </div>
 
     <div class="sidebar">
-      <p><strong>Room:</strong> ${i+1}/${rooms.length}</p>
-      <p><strong>Hints used:</strong> ${gameState.hintsUsed}</p>
       <h3>Evidence</h3>
       ${rooms.map(r=>`
         <div class="evidence-item">${gameState.evidence.has(r.evidence)?"✅":"🔒"} ${r.evidence}</div>
@@ -271,7 +254,6 @@ function startTimer(){
       `⏱ ${formatTime(Math.max(gameState.timeRemaining,0))}`;
     if(gameState.timeRemaining<=0){
       clearInterval(gameState.timer);
-      alert("⏰ Time's up!");
       showInstructions();
     }
   },1000);
@@ -283,10 +265,10 @@ function submitAnswer(){
   const m=document.getElementById("message");
 
   if(v===r.puzzle.answer){
-    m.className="message success";
-    m.innerHTML="Correct!<br><button onclick='loadRoom(gameState.currentRoom+1)'>➡ Next Room</button>";
     gameState.evidence.add(r.evidence);
     clearInterval(gameState.timer);
+    m.className="message success";
+    m.innerHTML=`Correct!<br><button onclick="loadRoom(${gameState.currentRoom+1})">➡ Next</button>`;
   }else{
     m.className="message error";
     m.textContent="Incorrect!";
@@ -296,7 +278,6 @@ function submitAnswer(){
 
 function showHint(){
   document.getElementById("hintMsg").textContent=rooms[gameState.currentRoom].hint;
-  gameState.hintsUsed++;
   gameState.timeRemaining=Math.max(gameState.timeRemaining-60,0);
 }
 
@@ -311,10 +292,42 @@ function closeImageModal(){
   document.getElementById("imageModal").classList.remove("active");
 }
 
+/* 🔐 FINAL INTERNET RIDDLE */
+function showInternetRiddle(){
+  document.getElementById("gameContainer").innerHTML=`
+    <div class="main-content" style="grid-column:1/-1;text-align:center">
+      <h1>🌐 Final Internet Riddle</h1>
+      <p style="margin:20px 0;font-style:italic">
+        No wires in sight, yet minds are linked,<br>
+        A room where signals are tested and synced.<br>
+        <strong>Name this place.</strong>
+      </p>
+      <input id="riddleAnswer" placeholder="Your answer">
+      <button onclick="checkRiddle()">Submit Answer</button>
+      <div id="riddleMsg"></div>
+    </div>
+  `;
+}
+
+function checkRiddle(){
+  const a=document.getElementById("riddleAnswer").value.trim().toLowerCase();
+  const m=document.getElementById("riddleMsg");
+  const valid=["network lab","network laboratory","networking lab"];
+
+  if(valid.includes(a)){
+    m.className="message success";
+    m.innerHTML="✅ Correct!<br><button onclick='showFinal()'>🏆 Close Case</button>";
+  }else{
+    m.className="message error";
+    m.textContent="❌ Incorrect. Think about testing signals without wires.";
+  }
+}
+
 function showFinal(){
   document.getElementById("gameContainer").innerHTML=`
     <div class="main-content" style="grid-column:1/-1;text-align:center">
       <h1 style="color:#16c784">🏆 Case Closed!</h1>
+      <p>You solved the investigation AND the internet riddle.</p>
       <div class="play-again" onclick="showInstructions()">🔄 Play Again</div>
     </div>
   `;

@@ -186,7 +186,7 @@ function showInstructions(){
   document.getElementById("gameContainer").innerHTML=`
     <div class="main-content" style="grid-column:1/-1;text-align:center">
       <h1>🕵 How to Play</h1>
-      <p>Solve all rooms, then face the final internet riddle.</p>
+      <p>Solve all rooms to uncover the final hidden clue.</p>
       <button onclick="startGame()">🚨 Start Investigation</button>
     </div>
   `;
@@ -195,7 +195,7 @@ function showInstructions(){
 function startGame(){gameState.currentRoom=0;gameState.evidence.clear();loadRoom(0);}
 
 function loadRoom(i){
-  if(i>=rooms.length){showInternetRiddle();return;}
+  if(i>=rooms.length){showFinalRiddle();return;}
   gameState.currentRoom=i;
   gameState.timeRemaining=rooms[i].timeLimit;
 
@@ -270,15 +270,15 @@ function openImageModal(idx){
 
 function closeImageModal(){document.getElementById("imageModal").classList.remove("active");}
 
-/* 🔐 FINAL INTERNET RIDDLE */
-function showInternetRiddle(){
+/* 🔐 FINAL RIDDLE */
+function showFinalRiddle(){
   document.getElementById("gameContainer").innerHTML=`
     <div class="main-content" style="grid-column:1/-1;text-align:center">
-      <h1>🌐 Final Internet Riddle</h1>
+      <h1>🌟 Final Clue</h1>
       <p style="margin:20px 0;font-style:italic">
         No wires in sight, yet minds are linked,<br>
         A room where signals are tested and synced.<br>
-        <strong>Name this place.</strong>
+        <strong>What is this place?</strong>
       </p>
       <input id="riddleAnswer" placeholder="Your answer">
       <button onclick="checkRiddle()">Submit Answer</button>
@@ -290,22 +290,22 @@ function showInternetRiddle(){
 function checkRiddle(){
   const a=document.getElementById("riddleAnswer").value.trim().toLowerCase();
   const m=document.getElementById("riddleMsg");
-  const valid=["internet lab"]; // ✅ changed answer
+  const valid=["internet lab"];
 
   if(valid.includes(a)){
     m.className="message success";
-    m.innerHTML="✅ Correct!<br><button onclick='showFinal()'>🏆 Close Case</button>";
+    m.innerHTML="✅ Correct!<br><button onclick='showFinalPage()'>🏆 Finish</button>";
   }else{
     m.className="message error";
     m.textContent="❌ Incorrect. Think about testing signals without wires.";
   }
 }
 
-function showFinal(){
+function showFinalPage(){
   document.getElementById("gameContainer").innerHTML=`
     <div class="main-content" style="grid-column:1/-1;text-align:center">
       <h1 style="color:#16c784">🏆 Case Closed!</h1>
-      <p>You solved the investigation AND the internet riddle.</p>
+      <p>Congratulations! You solved all rooms and uncovered the final clue.</p>
       <div class="play-again" onclick="showInstructions()">🔄 Play Again</div>
     </div>
   `;
